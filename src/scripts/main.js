@@ -463,15 +463,31 @@ const newStartSlides = document.querySelectorAll('.new-start__image-wrapper');
 const newStartUnderline = document.querySelector(
   '.new-start__prev-next .prev-next__underline-position',
 );
+const slideshowContainer = document.querySelector(
+  '.about__slideshow-container',
+);
 let aboutIndex = 0;
 let newStartIndex = 0;
+let touchStartX = 0;
+const THRESHOLD = 50;
+
+function currentSlide(n) {
+  if (n < 1) n = 1;
+  if (n > aboutSlides.length) n = aboutSlides.length;
+
+  Array.from(aboutSlides).forEach((s) => (s.style.display = 'none'));
+  Array.from(aboutDots).forEach((d) => d.classList.remove('active'));
+
+  aboutSlides[n - 1].style.display = 'block';
+  aboutDots[n - 1].classList.add('about__dot--active');
+}
 
 function renderAbout() {
   aboutSlides.forEach((s) => (s.style.display = 'none'));
-  aboutDots.forEach((d) => d.classList.remove('active'));
+  aboutDots.forEach((d) => d.classList.remove('about__dot--active'));
 
   aboutSlides[aboutIndex].style.display = 'block';
-  aboutDots[aboutIndex].classList.add('active');
+  aboutDots[aboutIndex].classList.add('about__dot--active');
 
   aboutUnderline.style.left = `${aboutIndex * (100 / aboutSlides.length)}%`;
 
@@ -686,8 +702,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ),
   );
 
-  console.log(fields);
-
   function validateField(fieldEl) {
     const input = fieldEl.querySelector('.contacts__input');
     const valid = input.checkValidity();
@@ -735,6 +749,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const initial = 'en';
   langSelect.value = initial;
   changeLanguage(initial);
+});
+
+slideshowContainer.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+});
+
+slideshowContainer.addEventListener('touchend', (e) => {
+  const touchEndX = e.changedTouches[0].clientX;
+  const diffX = touchEndX - touchStartX;
+
+  if (Math.abs(diffX) < THRESHOLD) return;
+
+  if (diffX > 0) {
+    if (aboutIndex > 0) {
+      aboutIndex--;
+    }
+  } else {
+    if (aboutIndex < aboutSlides.length - 1) {
+      aboutIndex++;
+    }
+  }
+  renderAbout();
 });
 
 renderNewStart();
